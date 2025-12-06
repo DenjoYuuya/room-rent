@@ -600,4 +600,47 @@
     }
 
     function clearHistory() {
-      cons
+      const t = translations[currentLang];
+      if (confirm(t.confirmClear)) {
+        localStorage.removeItem('roomInvoices');
+        loadHistory();
+        document.getElementById('result').style.display = 'none';
+      }
+    }
+
+    function exportToCSV() {
+      const invoices = JSON.parse(localStorage.getItem('roomInvoices') || '[]');
+      if (invoices.length === 0) {
+        alert(translations[currentLang].noInvoices);
+        return;
+      }
+
+      const t = translations[currentLang];
+      let csv = '"Invoice ID","Date","Due Date","Room","Tenant","kWh","Total (៛)","Paid"\n';
+      csv += invoices.map(inv => 
+        `"${inv.id}","${new Date(inv.date).toLocaleDateString('en-GB')}","${new Date(inv.dueDate).toLocaleDateString('en-GB')}","${inv.room}","${inv.tenant.replace(/"/g, '""')}","${inv.kwh}","${inv.total}","${inv.paid ? 'Yes' : 'No'}"`
+      ).join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = translations[currentLang].csvFilename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function resetForm() {
+      document.getElementById('room').selectedIndex = 0;
+      document.getElementById('tenant').value = '';
+      document.getElementById('kwh').value = '';
+      document.getElementById('dueDate').value = '5';
+      document.getElementById('result').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
+
+    
