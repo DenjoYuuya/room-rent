@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Room Rent Manager</title>
-  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#3b82f6">
   <style>
@@ -77,7 +76,7 @@
       min-height: 1.2rem;
     }
 
-    /* Main App Styles (same as before, but inside .app-container) */
+    /* Main App */
     .app-container {
       padding: 16px;
     }
@@ -89,7 +88,6 @@
       border-radius: 14px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
-    /* ... (rest of styles unchanged — included below for completeness) */
     h1 {
       text-align: center;
       font-size: 1.4rem;
@@ -212,7 +210,6 @@
     .status-unpaid { background: #fee2e2; color: #b91c1c; }
     .status-overdue { background: #ffedd5; color: #c2410c; }
 
-    /* Logout button */
     .logout-bar {
       text-align: center;
       padding: 10px;
@@ -247,7 +244,7 @@
     </div>
   </div>
 
-  <!-- Main App (hidden until login) -->
+  <!-- Main App -->
   <div id="appScreen" class="screen app-container">
     <div class="logout-bar">
       <button class="logout-btn" onclick="logout()">Logout</button>
@@ -294,21 +291,19 @@
     </div>
   </div>
 
-  <!-- Translations & Logic -->
   <script>
-    // 🔑 CONFIG: Change password here
+    // 🔑 ADMIN CREDENTIALS (change 'rent123' to your own password)
     const ADMIN_USER = "admin";
-    const ADMIN_PASS = "rent123"; // 👈 CHANGE THIS TO YOUR OWN PASSWORD
+    const ADMIN_PASS = "rent123";
 
     function attemptLogin() {
       const user = document.getElementById('username').value.trim();
       const pass = document.getElementById('password').value;
       const errorEl = document.getElementById('loginError');
-
       if (user === ADMIN_USER && pass === ADMIN_PASS) {
         document.getElementById('loginScreen').classList.remove('active');
         document.getElementById('appScreen').classList.add('active');
-        loadHistory(); // Load data after login
+        loadHistory();
       } else {
         errorEl.textContent = "Invalid username or password.";
       }
@@ -322,7 +317,6 @@
       document.getElementById('loginError').textContent = '';
     }
 
-    // Prevent form submit on Enter (avoid page reload)
     document.addEventListener('keypress', function(e) {
       if (e.key === 'Enter' && document.getElementById('loginScreen').classList.contains('active')) {
         attemptLogin();
@@ -330,13 +324,280 @@
     });
   </script>
 
-  <!-- Rest of your app logic (same as previous version) -->
   <script>
     const translations = {
-      en: { /* ... same as before ... */ },
-      km: { /* ... same as before ... */ }
+      en: {
+        pageTitle: "Room Rent Manager (៛)",
+        lblRoom: "Room Number:",
+        lblTenant: "Tenant Name:",
+        lblKwh: "Electricity (kWh):",
+        lblDueDate: "Due Date (Day of Month):",
+        btnCalc: "Calculate",
+        btnReset: "Reset",
+        historyTitle: "📜 Invoice History",
+        btnExport: "Export CSV",
+        btnClear: "Clear All",
+        confirmClear: "Delete all saved invoices? This cannot be undone.",
+        noInvoices: "No invoices yet.",
+        invoiceTitle: "ROOM RENT INVOICE",
+        invoiceId: "Invoice ID",
+        date: "Date",
+        dueDate: "Due Date",
+        room: "Room",
+        tenant: "Tenant",
+        rent: "Rent",
+        water: "Water",
+        electricity: "Electricity",
+        totalDue: "TOTAL DUE",
+        thankYou: "Thank you for your payment!",
+        status: "Status",
+        paid: "Paid",
+        unpaid: "Unpaid",
+        overdue: "Overdue",
+        markAsPaid: "Mark as Paid",
+        csvFilename: "room_invoices.csv"
+      },
+      km: {
+        pageTitle: "កម្មវិធីគ្រប់គ្រងការជួលបន្ទប់ (៛)",
+        lblRoom: "លេខបន្ទប់:",
+        lblTenant: "ឈ្មោះអ្នកជួល:",
+        lblKwh: "ភ្លើង (kWh):",
+        lblDueDate: "ថ្ងៃផុតកំណត់ (ថ្ងៃនៃខែ):",
+        btnCalc: "គណនា",
+        btnReset: "ស្តារ",
+        historyTitle: "📜 ប្រវត្តិវិក័យបត្រ",
+        btnExport: "នាំចេញ CSV",
+        btnClear: "លុបទាំងអស់",
+        confirmClear: "លុបវិក័យបត្រទាំងអស់? មិនអាចស្តារវិញបានទេ។",
+        noInvoices: "មិនទាន់មានវិក័យបត្រ។",
+        invoiceTitle: "វិក័យបត្រជួលបន្ទប់",
+        invoiceId: "លេខវិក័យបត្រ",
+        date: "កាលបរិច្ឆេទ",
+        dueDate: "ថ្ងៃផុតកំណត់",
+        room: "បន្ទប់",
+        tenant: "អ្នកជួល",
+        rent: "ថ្លៃជួល",
+        water: "ថ្លៃទឹក",
+        electricity: "ភ្លើង",
+        totalDue: "សរុបត្រូវបង់",
+        thankYou: "សូមអរគុណសម្រាប់ការបង់ប្រាក់!",
+        status: "ស្ថានភាព",
+        paid: "បានបង់",
+        unpaid: "មិនទាន់បង់",
+        overdue: "ផុតកំណត់",
+        markAsPaid: "សម្គាល់ថាបានបង់",
+        csvFilename: "វិក័យបត្រ_បន្ទប់.csv"
+      }
     };
-    // Full script from previous version (omitted here for brevity but included in full code below)
-  </script>
-</body>
-</html>
+
+    let currentLang = 'en';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      const t = translations[lang];
+      document.getElementById('pageTitle').textContent = t.pageTitle;
+      document.getElementById('lblRoom').textContent = t.lblRoom;
+      document.getElementById('lblTenant').textContent = t.lblTenant;
+      document.getElementById('lblKwh').textContent = t.lblKwh;
+      document.getElementById('lblDueDate').textContent = t.lblDueDate;
+      document.getElementById('btnCalc').textContent = t.btnCalc;
+      document.getElementById('btnReset').textContent = t.btnReset;
+      document.getElementById('historyTitle').textContent = t.historyTitle;
+      document.getElementById('btnExport').textContent = t.btnExport;
+      document.getElementById('btnClear').textContent = t.btnClear;
+
+      const roomSelect = document.getElementById('room');
+      roomSelect.innerHTML = '<option value="">— ' + (lang === 'en' ? 'Select Room' : 'ជ្រើសរើសបន្ទប់') + ' —</option>';
+      for (let i = 1; i <= 10; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = (lang === 'en' ? 'Room ' : 'បន្ទប់ ') + i;
+        roomSelect.appendChild(option);
+      }
+
+      document.querySelectorAll('.lang-toggle button').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      loadHistory();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const roomSelect = document.getElementById('room');
+      for (let i = 1; i <= 10; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = 'Room ' + i;
+        roomSelect.appendChild(option);
+      }
+    });
+
+    function generateInvoiceId(room) {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const r = String(room).padStart(2, '0');
+      return `INV-${y}${m}${d}-${r}`;
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return currentLang === 'km'
+        ? date.toLocaleDateString('km-KH')
+        : date.toLocaleDateString('en-GB');
+    }
+
+    function getDueDate(isoDate, dueDay) {
+      const d = new Date(isoDate);
+      d.setDate(dueDay);
+      if (d < new Date(isoDate)) {
+        d.setMonth(d.getMonth() + 1);
+      }
+      return d.toISOString().split('T')[0];
+    }
+
+    function calculateRent() {
+      const room = document.getElementById('room').value;
+      const tenant = (document.getElementById('tenant').value || '—').trim();
+      const kwhInput = document.getElementById('kwh').value;
+      const dueDayInput = document.getElementById('dueDate').value || 5;
+      const t = translations[currentLang];
+
+      if (!room) { alert(currentLang === 'km' ? 'សូមជ្រើសរើសលេខបន្ទប់។' : 'Please select a room.'); return; }
+      const kwh = parseFloat(kwhInput);
+      const dueDay = parseInt(dueDayInput);
+      if (isNaN(kwh) || kwh < 0) { alert(currentLang === 'km' ? 'តម្លៃភ្លើងមិនត្រឹមត្រូវ។' : 'Invalid electricity value.'); return; }
+      if (isNaN(dueDay) || dueDay < 1 || dueDay > 31) { alert('Due day must be 1–31.'); return; }
+
+      const base = 160000, water = 10000, elec = kwh * 1000, total = base + water + elec;
+      const invId = generateInvoiceId(room);
+      const now = new Date();
+      const dueDate = getDueDate(now.toISOString(), dueDay);
+
+      const invoice = {
+        id: invId,
+        date: now.toISOString(),
+        dueDate: dueDate,
+        room: room,
+        tenant: tenant,
+        kwh: kwh,
+        total: total,
+        paid: false
+      };
+      saveInvoice(invoice);
+
+      const formattedTotal = total.toLocaleString('en-US');
+      const lines = [
+        "           " + t.invoiceTitle,
+        "================================",
+        `${t.invoiceId} : ${invId}`,
+        `${t.date}       : ${formatDate(now.toISOString())}`,
+        `${t.dueDate}    : ${formatDate(dueDate)}`,
+        `${t.room}       : ${room}`,
+        `${t.tenant}     : ${tenant}`,
+        "--------------------------------",
+        `${t.rent}       : 160,000៛`,
+        `${t.water}      :  10,000៛`,
+        `${t.electricity}:  ${kwh} kWh × 1,000៛ = ${elec}៛`,
+        "--------------------------------",
+        `${t.totalDue}  : ${formattedTotal}៛`,
+        "",
+        t.thankYou
+      ];
+
+      document.getElementById('result').innerHTML = `
+        <div class="invoice">${lines.join('\n')}</div>
+        <button class="btn btn-print" onclick="window.print()">🖨️ ${currentLang === 'km' ? 'បោះពុម្ព' : 'Print / Save as PDF'}</button>
+      `;
+      document.getElementById('result').style.display = 'block';
+      loadHistory();
+    }
+
+    function saveInvoice(invoice) {
+      const key = 'roomInvoices';
+      const invoices = JSON.parse(localStorage.getItem(key) || '[]');
+      invoices.unshift(invoice);
+      localStorage.setItem(key, JSON.stringify(invoices));
+    }
+
+    function togglePaid(invoiceId) {
+      const key = 'roomInvoices';
+      const invoices = JSON.parse(localStorage.getItem(key) || '[]');
+      const inv = invoices.find(i => i.id === invoiceId);
+      if (inv) {
+        inv.paid = !inv.paid;
+        localStorage.setItem(key, JSON.stringify(invoices));
+        loadHistory();
+      }
+    }
+
+    function loadHistory() {
+      const invoices = JSON.parse(localStorage.getItem('roomInvoices') || '[]');
+      const listEl = document.getElementById('historyList');
+      const t = translations[currentLang];
+
+      if (invoices.length === 0) {
+        listEl.innerHTML = '<div class="empty-history">' + t.noInvoices + '</div>';
+        return;
+      }
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      listEl.innerHTML = invoices.map(inv => {
+        const due = new Date(inv.dueDate);
+        due.setHours(0,0,0,0);
+        const isOverdue = !inv.paid && due < today;
+        const status = inv.paid ? 'paid' : (isOverdue ? 'overdue' : 'unpaid');
+        const statusText = inv.paid ? t.paid : (isOverdue ? t.overdue : t.unpaid);
+        const statusClass = inv.paid ? 'status-paid' : (isOverdue ? 'status-overdue' : 'status-unpaid');
+        const itemClass = inv.paid ? '' : (isOverdue ? 'overdue' : 'unpaid');
+
+        return `
+          <div class="history-item ${itemClass}" onclick="showInvoice('${inv.id}')">
+            <strong>${inv.id}</strong> • ${currentLang === 'km' ? 'បន្ទប់ ' : 'Room '}${inv.room} • ${inv.total.toLocaleString()}៛
+            <div style="font-size:0.85rem;color:#64748b;">${formatDate(inv.date)}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+              <span class="${statusClass}" style="font-size:0.8rem;">${t.status}: ${statusText}</span>
+              <button class="btn ${inv.paid ? 'btn-unpaid' : 'btn-paid'}" style="font-size:0.75rem;padding:3px 6px;" 
+                onclick="event.stopPropagation(); togglePaid('${inv.id}')">
+                ${inv.paid ? (currentLang === 'km' ? 'មិនបានបង់' : 'Unpaid') : t.markAsPaid}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showInvoice(invoiceId) {
+      const invoices = JSON.parse(localStorage.getItem('roomInvoices') || '[]');
+      const inv = invoices.find(i => i.id === invoiceId);
+      if (!inv) return;
+      const t = translations[currentLang];
+      const formattedTotal = inv.total.toLocaleString('en-US');
+      const lines = [
+        "           " + t.invoiceTitle,
+        "================================",
+        `${t.invoiceId} : ${inv.id}`,
+        `${t.date}       : ${formatDate(inv.date)}`,
+        `${t.dueDate}    : ${formatDate(inv.dueDate)}`,
+        `${t.room}       : ${inv.room}`,
+        `${t.tenant}     : ${inv.tenant}`,
+        "--------------------------------",
+        `${t.rent}       : 160,000៛`,
+        `${t.water}      :  10,000៛`,
+        `${t.electricity}:  ${inv.kwh} kWh × 1,000៛ = ${inv.kwh * 1000}៛`,
+        "--------------------------------",
+        `${t.totalDue}  : ${formattedTotal}៛`,
+        "",
+        t.thankYou
+      ];
+
+      document.getElementById('result').innerHTML = `
+        <div class="invoice">${lines.join('\n')}</div>
+        <button class="btn btn-print" onclick="window.print()">🖨️ ${currentLang === 'km' ? 'បោះពុម្ព' : 'Print / Save as PDF'}</button>
+      `;
+      document.getElementById('result').style.display = 'block';
+    }
+
+    function clearHistory() {
+      cons
